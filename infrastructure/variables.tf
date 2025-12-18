@@ -13,11 +13,10 @@ variable "compartment_id" {
   description = "OCI compartment ID"
 }
 
-# TODO(rg): default to the first (or random) AD in a region
 variable "availability_domain" {
   type        = string
-  default     = "gzqB:US-SANJOSE-1-AD-1"
-  description = "OCI availability domain"
+  default     = ""
+  description = "OCI availability domain (leave empty to use the first AD)"
 }
 
 variable "shape" {

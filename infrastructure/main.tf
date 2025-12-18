@@ -2,6 +2,10 @@ provider "oci" {
   region = var.region
 }
 
+data "oci_identity_availability_domains" "ads" {
+  compartment_id = var.compartment_id
+}
+
 # Create a new VCN
 resource "oci_core_vcn" "luna_vcn" {
   compartment_id = var.compartment_id
@@ -74,7 +78,7 @@ resource "oci_core_security_list" "luna_security_list" {
 
 # Update the instance to use the new subnet
 resource "oci_core_instance" "luna_instance" {
-  availability_domain = var.availability_domain
+  availability_domain = length(var.availability_domain) > 0 ? var.availability_domain : data.oci_identity_availability_domains.ads.availability_domains[0].name
   compartment_id      = var.compartment_id
   shape               = var.shape
 
@@ -99,17 +103,20 @@ resource "oci_core_instance" "luna_instance" {
     ocpus         = 30
     memory_in_gbs = 480
   }
+}
 
+resource "null_resource" "wait_for_cloudinit" {
+  depends_on = [oci_core_instance.luna_instance]
   provisioner "remote-exec" {
     connection {
       type        = "ssh"
-      host        = self.public_ip
+      host        = oci_core_instance.luna_instance.public_ip
       user        = "opc"
       private_key = file(var.ssh_key_path)
     }
+
     inline = [
-      "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 5; done",
-      "echo 'Cloud-init has finished!'",
+      "sudo cloud-init status --wait > /dev/null",
       "sudo reboot",
     ]
   }
