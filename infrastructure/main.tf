@@ -98,25 +98,17 @@ resource "oci_core_instance" "luna_instance" {
     user_data           = base64encode(file(var.cloud_init_script))
   }
 
-
-  shape_config {
-    ocpus         = 30
-    memory_in_gbs = 480
-  }
-}
-
-resource "null_resource" "wait_for_cloudinit" {
-  depends_on = [oci_core_instance.luna_instance]
   provisioner "remote-exec" {
     connection {
       type        = "ssh"
-      host        = oci_core_instance.luna_instance.public_ip
+      host        = self.public_ip
       user        = "opc"
       private_key = file(var.ssh_key_path)
     }
 
     inline = [
       "sudo cloud-init status --wait > /dev/null",
+      "for model in gpt-oss gpt-oss:120b llama4; do ollama pull $model; done",
       "sudo reboot",
     ]
   }

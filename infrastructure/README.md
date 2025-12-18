@@ -11,13 +11,20 @@ application as code.
 brew install terraform oci-cli
 ```
 
-### Authenticate with OCI and create instance
-
+### Authenticate with OCI
 ```bash
 oci session authenticate --profile-name DEFAULT --region us-sanjose-1
+```
+
+### Create resources
+```bash
 terraform init
-terraform plan -out setup.plan
-terraform apply setup.plan
+terraform apply
+```
+
+### :warning: (Optional) Destroy resources
+```bash
+terraform destroy
 ```
 
 ## Development
