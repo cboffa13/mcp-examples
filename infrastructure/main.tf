@@ -9,7 +9,7 @@ data "oci_identity_availability_domains" "ads" {
 # Create a new VCN
 resource "oci_core_vcn" "luna_vcn" {
   compartment_id = var.compartment_id
-  cidr_blocks    = ["10.0.0.0/16"]
+  cidr_blocks    = var.vcn_cidr_blocks
   display_name   = "luna-vcn"
 }
 
@@ -35,7 +35,7 @@ resource "oci_core_route_table" "luna_route_table" {
 resource "oci_core_subnet" "luna_public_subnet" {
   compartment_id             = var.compartment_id
   vcn_id                     = oci_core_vcn.luna_vcn.id
-  cidr_block                 = "10.0.1.0/28"
+  cidr_block                 = var.subnet_cidr_block
   display_name               = "luna-public-subnet"
   prohibit_public_ip_on_vnic = false
   security_list_ids          = [oci_core_security_list.luna_security_list.id]
@@ -85,7 +85,7 @@ resource "oci_core_instance" "luna_instance" {
   source_details {
     source_type             = "image"
     source_id               = var.image_id
-    boot_volume_size_in_gbs = 500
+    boot_volume_size_in_gbs = var.boot_volume_size_in_gbs
   }
 
   create_vnic_details {

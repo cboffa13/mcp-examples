@@ -36,3 +36,21 @@ variable "ssh_key_path" {
   default     = "~/.ssh/id_rsa"
   description = "Path to SSH private key"
 }
+
+variable "vcn_cidr_blocks" {
+  type        = list(string)
+  default     = ["10.0.0.0/16"]
+  description = "List of CIDR blocks for the VCN"
+}
+
+variable "subnet_cidr_block" {
+  type        = string
+  default     = "10.0.1.0/28"
+  description = "CIDR block for the public subnet"
+}
+
+variable "boot_volume_size_in_gbs" {
+  type        = number
+  default     = 500
+  description = "Boot volume size in GB"
+}
