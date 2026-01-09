@@ -4,62 +4,60 @@ from dotenv import load_dotenv
 import oci
 
 from fastmcp import Context, FastMCP
-from fastmcp.server.auth.oidc_proxy import OIDCProxy
+from fastmcp.server.auth.providers.oci import OCIProvider
 from fastmcp.server.dependencies import get_access_token
 from oci.auth.signers import TokenExchangeSigner
 
 from starlette.responses import PlainTextResponse
 from starlette.requests import Request
+import os
+from dotenv import load_dotenv
 
 # Load Environment variables from .env file
 load_dotenv()
-# Create .env file with IDCS_DOMAIN, IDCS_CLIENT_ID, IDCS_CLIENT_SECRET variables.
-# IDCS_CLIENT_ID and IDCS_CLIENT_SECRET are from the IAM Domain OAuth2 client credentials.
-# IDCS_DOMAIN is the domain name of the created IAM Domain.
+
 IDCS_DOMAIN = os.getenv("IDCS_DOMAIN")
 IDCS_CLIENT_ID = os.getenv("IDCS_CLIENT_ID")
 IDCS_CLIENT_SECRET = os.getenv("IDCS_CLIENT_SECRET")
 
-# Simple in-memory global cache for signers
-# In production, consider using a more robust caching mechanism
+from fastmcp.utilities.logging import get_logger
+logger = get_logger(__name__)
+
 _global_token_cache = {}
 
-# Get an instance of OCI Token Exchange Signer
 def get_oci_signer() -> TokenExchangeSigner:
-    """Create an OCI TokenExchangeSigner using the provided token."""
-    
-    mcp_token = get_access_token()
-    tokenID = mcp_token.claims.get("jti")
-    token = mcp_token.token 
+    authntoken = get_access_token()
+    tokenID = authntoken.claims.get("jti")
+    token = authntoken.token
     
     cached_signer = _global_token_cache.get(tokenID)
-    print(f"Global cached signer: {cached_signer}")
+    logger.debug(f"Global cached signer: {cached_signer}")
     if cached_signer:
-        print(f"Using globally cached signer for token ID: {tokenID}")
+        logger.debug(f"Using globally cached signer for token ID: {tokenID}")
         return cached_signer
-    print(f"Creating new signer for token ID: {tokenID}")
+
+    logger.debug(f"Creating new signer for token ID: {tokenID}")
     signer = TokenExchangeSigner(
         jwt_or_func=token,
         oci_domain_id=IDCS_DOMAIN.split(".")[0],
         client_id=IDCS_CLIENT_ID,
         client_secret=IDCS_CLIENT_SECRET,
     )
+    logger.debug(f"Signer {signer} created for token ID: {tokenID}")
+
     _global_token_cache[tokenID] = signer
-    print(f"Signer cached globally for token ID: {tokenID}")
+    logger.debug(f"Signer cached for token ID: {tokenID}")
+
     return signer
 
-auth = OIDCProxy(
+auth_provider = OCIProvider(
     config_url=f"https://{IDCS_DOMAIN}/.well-known/openid-configuration",
     client_id=IDCS_CLIENT_ID,
     client_secret=IDCS_CLIENT_SECRET,
-    # FastMCP endpoint
     base_url="http://localhost:5000",
-    # audience=IDCS_CLIENT_ID,
-    required_scopes=["openid", "profile", "email"],
-    # redirect_path="/custom/callback",
 )
 
-mcp = FastMCP(name="My Server", auth=auth)
+mcp = FastMCP(name="My Server", auth=auth_provider)
 
 @mcp.tool
 async def list_regions(region: str, ctx: Context) -> str:

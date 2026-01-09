@@ -5,7 +5,7 @@ from fastmcp import Client
 from fastmcp.client.auth import OAuth
 
 oauth = OAuth(
-    mcp_url="http://localhost:5000",
+    mcp_url="http://localhost:5000/mcp",
     scopes=["openid"],
 )
 
