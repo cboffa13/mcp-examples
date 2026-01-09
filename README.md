@@ -9,6 +9,7 @@ Prototypes and proofs-of-concept
 | [agent](./agent) | An example agent developed using LangGraph that drives the OCI CLI |
 | [policy](./policy) | Demonstration of out-of-band policy enforcement for MCP servers/tools |
 | [server](./server) | Example of MCP authentication using OCI IDCS and OAuth |
+| [infrastructure](./infrastructure) | Example templates that instantiate an OCI GPU compute instance and install the Nvidia stack |
 
 ## Getting started
 
