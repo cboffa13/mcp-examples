@@ -33,6 +33,38 @@ export TOKEN=$(pbpaste)
 uv run client.py
 ```
 
+## Architecture
+
+The following diagram illustrates the architecture of the MCP Server:
+
+```mermaid
+sequenceDiagram
+    box rgb(140,140,140) User Tenancy
+    participant Client
+    end
+    box rgb(140,140,140) Service Tenancy
+    participant MCP Server
+    participant IDCS
+    end
+
+    box rgb(140,140,140) OCI
+    participant OCI APIs
+    end
+
+    Client->>MCP Server: Authentication Request
+    MCP Server->>IDCS: Redirect to IDCS Authentication
+    Client->>IDCS: Authenticate
+    IDCS->>Client: Authorization Token
+    Client->>MCP Server: Request with Authorization Token
+    MCP Server->>IDCS: Validate Token
+    IDCS->>MCP Server: Token Validation Response
+    MCP Server->>IDCS: Exchange Token for UPST
+    IDCS->>MCP Server: UPST
+    MCP Server->>OCI APIs: Request with UPST (using Token Exchange Signer)
+    OCI APIs->>MCP Server: Response
+    MCP Server->>Client: Response
+```
+
 ## License
 Copyright (c) 2025 Oracle and/or its affiliates.
  
