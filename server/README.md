@@ -39,7 +39,7 @@ The following diagram illustrates the architecture of the MCP Server:
 
 ```mermaid
 sequenceDiagram
-    box rgb(140,140,140) User Tenancy
+    box hsl(60, 80%, 95%) User Tenancy
     participant Client
     end
     box rgb(140,140,140) Service Tenancy
