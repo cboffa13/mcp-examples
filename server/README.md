@@ -42,7 +42,7 @@ sequenceDiagram
     box hsl(60, 80%, 95%) User Tenancy
     participant Client
     end
-    box rgb(140,140,140) Service Tenancy
+    box hsl(60, 80%, 95%) Service Tenancy
     participant MCP Server
     participant IDCS
     end
